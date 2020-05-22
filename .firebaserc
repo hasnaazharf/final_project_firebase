@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "production": "energy-monitoring-6c8ab",
+    "default": "energy-monitoring-6c8ab"
+  }
+}

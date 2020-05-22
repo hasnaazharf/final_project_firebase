@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!-- saved from url=(0061)https://www.chartjs.org/samples/latest/charts/line/basic.html -->
+<html>
+<script async="" src="./Line Chart_files/analytics.js"></script>
+<script type="text/javascript" charset="utf-8" id="zm-extension"
+	src="chrome-extension://fdcgdnkidjaadafnichfpabhfomcebme/scripts/webrtc-patch.js" async=""></script>
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1" /> 
+	<title>Line Chart</title>
+	<script src="./Line Chart_files/Chart.min.js"></script>
+	<script src="./Line Chart_files/utils.js"></script>
+	<style>
+		canvas {
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+		}
+	</style>
+	<style type="text/css">
+		/* Chart.js */
+		@keyframes chartjs-render-animation {
+			from {
+				opacity: .99
+			}
+
+			to {
+				opacity: 1
+			}
+		}
+
+		.chartjs-render-monitor {
+			animation: chartjs-render-animation 1ms
+		}
+
+		.chartjs-size-monitor,
+		.chartjs-size-monitor-expand,
+		.chartjs-size-monitor-shrink {
+			position: absolute;
+			direction: ltr;
+			left: 0;
+			top: 0;
+			right: 0;
+			bottom: 0;
+			overflow: hidden;
+			pointer-events: none;
+			visibility: hidden;
+			z-index: -1
+		}
+
+		.chartjs-size-monitor-expand>div {
+			position: absolute;
+			width: 1000000px;
+			height: 1000000px;
+			left: 0;
+			top: 0
+		}
+
+		.chartjs-size-monitor-shrink>div {
+			position: absolute;
+			width: 200%;
+			height: 200%;
+			left: 0;
+			top: 0
+		}
+	</style>
+</head>
+
+<body data-gr-c-s-loaded="true">
+	<div style="width:100%;">
+		<div class="chartjs-size-monitor">
+			<div class="chartjs-size-monitor-expand">
+				<div class=""></div>
+			</div>
+			<div class="chartjs-size-monitor-shrink">
+				<div class=""></div>
+			</div>
+		</div>
+		<canvas id="energy_daily_canvas" style="display: block; height: 474px; width: 474px;" width="1896" height="948"
+			class="chartjs-render-monitor"></canvas>
+	</div>
+	<div style="width:100%;">
+		<div class="chartjs-size-monitor">
+			<div class="chartjs-size-monitor-expand">
+				<div class=""></div>
+			</div>
+			<div class="chartjs-size-monitor-shrink">
+				<div class=""></div>
+			</div>
+		</div>
+		<canvas id="energy_monthly_canvas" style="display: block; height: 474px; width: 474px;" width="1896"
+			height="948" class="chartjs-render-monitor"></canvas>
+	</div>
+	<script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+	<script>
+
+		var pir_data = []
+		var pir_labels = []
+		var energy_data = []
+		let base_url = "https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app"
+
+		$(document).ready(function () {
+			$.get(base_url + "/api/energy_daily", function (data) {
+				chart_data = {
+					label: [],
+					value: []
+				}
+				data.forEach(element => {
+					val = {
+						t: element.date,
+						y: element.wh,
+					}
+					chart_data.value.push(element.wh)
+					chart_data.label.push(element.date)
+				});
+
+				draw_chart("energy_daily_canvas", chart_data, 'Daily Energy Consumption (in Wh)')
+			});
+
+			$.get(base_url + "/api/energy_monthly", function (data) {
+				chart_data = {
+					label: [],
+					value: []
+				}
+				data.forEach(element => {
+					val = {
+						t: element.date,
+						y: element.kwh,
+					}
+					chart_data.value.push(element.kwh)
+					chart_data.label.push(element.date)
+				});
+
+				draw_chart("energy_monthly_canvas", chart_data, 'Monthly Energy Consumption (in kWh)')
+			});
+		})
+
+
+		function draw_chart(id, data, label) {
+
+			var config = {
+				type: 'line',
+				data: {
+					labels: data.label,
+					datasets: [{
+						label: label,
+						backgroundColor: window.chartColors.red,
+						borderColor: window.chartColors.red,
+						data: data.value,
+						fill: false
+					}]
+				},
+				options: {
+					scales: {
+						yAxes: [{
+							ticks: {
+								beginAtZero: true
+							}
+						}]
+					}
+				}
+			};
+
+			var ctx = document.getElementById(id).getContext('2d');
+			window.myLine = new Chart(ctx, config);
+		}
+	</script>
+
+
+
+	<script src="./Line Chart_files/cnxkcg=="></script>
+</body>
+
+</html>
