@@ -16,6 +16,12 @@
 <body>
     <div class="container-fluid">
         <div class="row">
+            <div class="col-md-12 mt-4">
+                Energy cost per kWh: <br><input type="number" id="price_input" value="1467.28"> <button type="button"
+                    id="price-btn">Apply</button>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-md-6 mt-4">
                 <div class="card">
                     <div class="card-header">
@@ -24,6 +30,8 @@
                     <div class="card-body">
                         <p class="card-text">Daily: <span id="avg_daily_kwh">0</span> kWh.</p>
                         <p class="card-text">Monthly: <span id="avg_monthly_kwh">0</span> kWh.</p>
+                        <p class="card-text">Daily Cost: Rp.<span id="avg_daily_idr">0</span>.-</p>
+                        <p class="card-text">Monthly Cost: Rp.<span id="avg_monthly_idr">0</span>,-</p>
                     </div>
                 </div>
             </div>
@@ -33,8 +41,11 @@
                         Last Energy Consumption
                     </div>
                     <div class="card-body">
-                        <p class="card-text"><span class="font-weight-bold" id="last_date_label">Daily</span>: <span id="last_daily_kwh">0</span> kWh.</p>
-                        <p class="card-text"><span class="font-weight-bold" id="last_month_label">Monthly</span>: <span id="last_monthly_kwh">0</span> kWh.</p>
+                        <p class="card-text"><span class="font-weight-bold" id="last_month_label">Monthly</span>:<br>
+                            Total: <span
+                                id="last_monthly_kwh">0</span> kWh<br>
+                                Cost: Rp.<span
+                                id="last_monthly_idr">0</span>,-</p>
                     </div>
                 </div>
             </div>
@@ -42,8 +53,7 @@
 
         <!-- Optional JavaScript -->
         <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-        <script src="https://code.jquery.com/jquery-3.2.1.min.js"
-            crossorigin="anonymous"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
             integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
             crossorigin="anonymous"></script>
@@ -52,38 +62,47 @@
             crossorigin="anonymous"></script>
 
         <script>
-            // init daily data
-            var total_daily_data = 0
-            var total_daily_kwh = 0
-            var total_daily_wh = 0
-            var total_daily_joule = 0
-            var total_average_daily_kwh = 0
-            var total_average_daily_wh = 0
-            var total_average_daily_joule = 0
-            var last_daily_kwh = 0
-            var last_daily_wh = 0
-            var last_daily_joule = 0
 
-            // init monthly data
-            var total_monthly_data = 0
-            var total_monthly_kwh = 0
-            var total_monthly_wh = 0
-            var total_monthly_joule = 0
-            var total_average_monthly_kwh = 0
-            var total_average_monthly_wh = 0
-            var total_average_monthly_joule = 0
-            var last_monthly_kwh = 0
-            var last_monthly_wh = 0
-            var last_monthly_joule = 0
+            $(document).ready(function () {
+                calculate_data()
+                $("#price-btn").click(function(){
+                    calculate_data()
+                })
+            })
 
-            // init label
-            var last_date = ""
-            var last_month = ""
+            function calculate_data() {
+                
+                var price = $("#price_input").val()
+                // init daily data
+                var total_daily_data = 0
+                var total_daily_kwh = 0
+                var total_daily_wh = 0
+                var total_daily_joule = 0
+                var total_average_daily_kwh = 0
+                var total_average_daily_wh = 0
+                var total_average_daily_joule = 0
+                var last_daily_kwh = 0
+                var last_daily_wh = 0
+                var last_daily_joule = 0
 
-            $(document).ready(function(){
-                $.get("https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app/api/energy_daily", function(data){
+                // init monthly data
+                var total_monthly_data = 0
+                var total_monthly_kwh = 0
+                var total_monthly_wh = 0
+                var total_monthly_joule = 0
+                var total_average_monthly_kwh = 0
+                var total_average_monthly_wh = 0
+                var total_average_monthly_joule = 0
+                var last_monthly_kwh = 0
+                var last_monthly_wh = 0
+                var last_monthly_joule = 0
+
+                // init label
+                var last_date = ""
+                var last_month = ""
+                $.get("https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app/api/energy_daily", function (data) {
                     // itterate every data item
-                    data.forEach(function(item){
+                    data.forEach(function (item) {
                         // get item then sum it to daily total global variable
                         total_daily_kwh += item["kwh"]
                         total_daily_wh += item["wh"]
@@ -94,20 +113,19 @@
                         last_daily_joule = item["joule"]
                         // get last date label
                         last_date = item['date']
-                        total_daily_data ++
+                        total_daily_data++
                     });
                     // calculate average
-                    total_average_daily_kwh = total_daily_kwh/total_daily_data
-                    total_average_daily_wh = total_daily_wh/total_daily_data
-                    total_average_daily_joule = total_daily_joule/total_daily_data
+                    total_average_daily_kwh = total_daily_kwh / total_daily_data
+                    total_average_daily_wh = total_daily_wh / total_daily_data
+                    total_average_daily_joule = total_daily_joule / total_daily_data
                     // add data to html element
                     $("#avg_daily_kwh").html(total_average_daily_kwh.toLocaleString())
-                    $("#last_daily_kwh").html(last_daily_kwh.toLocaleString())
-                    $("#last_date_label").html(last_date)
+                    $("#avg_daily_idr").html((total_average_daily_kwh*price).toLocaleString())
                 })
 
-                $.get("https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app/api/energy_monthly", function(data){
-                    data.forEach(function(item){
+                $.get("https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app/api/energy_monthly", function (data) {
+                    data.forEach(function (item) {
                         // get item then sum it to monthly total global variable
                         total_monthly_kwh += item["kwh"]
                         total_monthly_wh += item["wh"]
@@ -118,18 +136,20 @@
                         last_monthly_joule = item["joule"]
                         // get last month label
                         last_month = item['date']
-                        total_monthly_data ++
+                        total_monthly_data++
                     });
                     // calculate average
-                    total_average_monthly_kwh = total_monthly_kwh/total_monthly_data
-                    total_average_monthly_wh = total_monthly_wh/total_monthly_data
-                    total_average_monthly_joule = total_monthly_joule/total_monthly_data
+                    total_average_monthly_kwh = total_monthly_kwh / total_monthly_data
+                    total_average_monthly_wh = total_monthly_wh / total_monthly_data
+                    total_average_monthly_joule = total_monthly_joule / total_monthly_data
                     // add data to html element
                     $("#avg_monthly_kwh").html(total_average_monthly_kwh.toLocaleString())
+                    $("#avg_monthly_idr").html((total_average_monthly_kwh*price).toLocaleString())
                     $("#last_monthly_kwh").html(last_monthly_kwh.toLocaleString())
+                    $("#last_monthly_idr").html((last_monthly_kwh*price).toLocaleString())
                     $("#last_month_label").html(last_month)
                 })
-            })
+            }
         </script>
 </body>
 
