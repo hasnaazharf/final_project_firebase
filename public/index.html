@@ -1,175 +1,136 @@
-<!DOCTYPE html>
-<!-- saved from url=(0061)https://www.chartjs.org/samples/latest/charts/line/basic.html -->
-<html>
-<script async="" src="./Line Chart_files/analytics.js"></script>
-<script type="text/javascript" charset="utf-8" id="zm-extension"
-	src="chrome-extension://fdcgdnkidjaadafnichfpabhfomcebme/scripts/webrtc-patch.js" async=""></script>
+<!doctype html>
+<html lang="en">
 
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1" /> 
-	<title>Line Chart</title>
-	<script src="./Line Chart_files/Chart.min.js"></script>
-	<script src="./Line Chart_files/utils.js"></script>
-	<style>
-		canvas {
-			-moz-user-select: none;
-			-webkit-user-select: none;
-			-ms-user-select: none;
-		}
-	</style>
-	<style type="text/css">
-		/* Chart.js */
-		@keyframes chartjs-render-animation {
-			from {
-				opacity: .99
-			}
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-			to {
-				opacity: 1
-			}
-		}
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
-		.chartjs-render-monitor {
-			animation: chartjs-render-animation 1ms
-		}
-
-		.chartjs-size-monitor,
-		.chartjs-size-monitor-expand,
-		.chartjs-size-monitor-shrink {
-			position: absolute;
-			direction: ltr;
-			left: 0;
-			top: 0;
-			right: 0;
-			bottom: 0;
-			overflow: hidden;
-			pointer-events: none;
-			visibility: hidden;
-			z-index: -1
-		}
-
-		.chartjs-size-monitor-expand>div {
-			position: absolute;
-			width: 1000000px;
-			height: 1000000px;
-			left: 0;
-			top: 0
-		}
-
-		.chartjs-size-monitor-shrink>div {
-			position: absolute;
-			width: 200%;
-			height: 200%;
-			left: 0;
-			top: 0
-		}
-	</style>
+    <title>Energy Consumption Status</title>
 </head>
 
-<body data-gr-c-s-loaded="true">
-	<div style="width:100%;">
-		<div class="chartjs-size-monitor">
-			<div class="chartjs-size-monitor-expand">
-				<div class=""></div>
-			</div>
-			<div class="chartjs-size-monitor-shrink">
-				<div class=""></div>
-			</div>
-		</div>
-		<canvas id="energy_daily_canvas" style="display: block; height: 474px; width: 474px;" width="1896" height="948"
-			class="chartjs-render-monitor"></canvas>
-	</div>
-	<div style="width:100%;">
-		<div class="chartjs-size-monitor">
-			<div class="chartjs-size-monitor-expand">
-				<div class=""></div>
-			</div>
-			<div class="chartjs-size-monitor-shrink">
-				<div class=""></div>
-			</div>
-		</div>
-		<canvas id="energy_monthly_canvas" style="display: block; height: 474px; width: 474px;" width="1896"
-			height="948" class="chartjs-render-monitor"></canvas>
-	</div>
-	<script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
-	<script>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-6 mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        Average Energy Consumption
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">Daily: <span id="avg_daily_kwh">0</span> kWh.</p>
+                        <p class="card-text">Monthly: <span id="avg_monthly_kwh">0</span> kWh.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mt-4">
+                <div class="card">
+                    <div class="card-header">
+                        Last Energy Consumption
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><span class="font-weight-bold" id="last_date_label">Daily</span>: <span id="last_daily_kwh">0</span> kWh.</p>
+                        <p class="card-text"><span class="font-weight-bold" id="last_month_label">Monthly</span>: <span id="last_monthly_kwh">0</span> kWh.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		var pir_data = []
-		var pir_labels = []
-		var energy_data = []
-		let base_url = "https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app"
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"
+            crossorigin="anonymous"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+            integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+            crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"
+            integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+            crossorigin="anonymous"></script>
 
-		$(document).ready(function () {
-			$.get(base_url + "/api/energy_daily", function (data) {
-				chart_data = {
-					label: [],
-					value: []
-				}
-				data.forEach(element => {
-					val = {
-						t: element.date,
-						y: element.wh,
-					}
-					chart_data.value.push(element.wh)
-					chart_data.label.push(element.date)
-				});
+        <script>
+            // init daily data
+            var total_daily_data = 0
+            var total_daily_kwh = 0
+            var total_daily_wh = 0
+            var total_daily_joule = 0
+            var total_average_daily_kwh = 0
+            var total_average_daily_wh = 0
+            var total_average_daily_joule = 0
+            var last_daily_kwh = 0
+            var last_daily_wh = 0
+            var last_daily_joule = 0
 
-				draw_chart("energy_daily_canvas", chart_data, 'Daily Energy Consumption (in Wh)')
-			});
+            // init monthly data
+            var total_monthly_data = 0
+            var total_monthly_kwh = 0
+            var total_monthly_wh = 0
+            var total_monthly_joule = 0
+            var total_average_monthly_kwh = 0
+            var total_average_monthly_wh = 0
+            var total_average_monthly_joule = 0
+            var last_monthly_kwh = 0
+            var last_monthly_wh = 0
+            var last_monthly_joule = 0
 
-			$.get(base_url + "/api/energy_monthly", function (data) {
-				chart_data = {
-					label: [],
-					value: []
-				}
-				data.forEach(element => {
-					val = {
-						t: element.date,
-						y: element.kwh,
-					}
-					chart_data.value.push(element.kwh)
-					chart_data.label.push(element.date)
-				});
+            // init label
+            var last_date = ""
+            var last_month = ""
 
-				draw_chart("energy_monthly_canvas", chart_data, 'Monthly Energy Consumption (in kWh)')
-			});
-		})
+            $(document).ready(function(){
+                $.get("https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app/api/energy_daily", function(data){
+                    // itterate every data item
+                    data.forEach(function(item){
+                        // get item then sum it to daily total global variable
+                        total_daily_kwh += item["kwh"]
+                        total_daily_wh += item["wh"]
+                        total_daily_joule += item["joule"]
+                        // get item then add it daily last global variable
+                        last_daily_kwh = item["kwh"]
+                        last_daily_wh = item["wh"]
+                        last_daily_joule = item["joule"]
+                        // get last date label
+                        last_date = item['date']
+                        total_daily_data ++
+                    });
+                    // calculate average
+                    total_average_daily_kwh = total_daily_kwh/total_daily_data
+                    total_average_daily_wh = total_daily_wh/total_daily_data
+                    total_average_daily_joule = total_daily_joule/total_daily_data
+                    // add data to html element
+                    $("#avg_daily_kwh").html(total_average_daily_kwh.toLocaleString())
+                    $("#last_daily_kwh").html(last_daily_kwh.toLocaleString())
+                    $("#last_date_label").html(last_date)
+                })
 
-
-		function draw_chart(id, data, label) {
-
-			var config = {
-				type: 'line',
-				data: {
-					labels: data.label,
-					datasets: [{
-						label: label,
-						backgroundColor: window.chartColors.red,
-						borderColor: window.chartColors.red,
-						data: data.value,
-						fill: false
-					}]
-				},
-				options: {
-					scales: {
-						yAxes: [{
-							ticks: {
-								beginAtZero: true
-							}
-						}]
-					}
-				}
-			};
-
-			var ctx = document.getElementById(id).getContext('2d');
-			window.myLine = new Chart(ctx, config);
-		}
-	</script>
-
-
-
-	<script src="./Line Chart_files/cnxkcg=="></script>
+                $.get("https://us-central1-energy-monitoring-6c8ab.cloudfunctions.net/app/api/energy_monthly", function(data){
+                    data.forEach(function(item){
+                        // get item then sum it to monthly total global variable
+                        total_monthly_kwh += item["kwh"]
+                        total_monthly_wh += item["wh"]
+                        total_monthly_joule += item["joule"]
+                        // get item then add it monthly last global variable
+                        last_monthly_kwh = item["kwh"]
+                        last_monthly_wh = item["wh"]
+                        last_monthly_joule = item["joule"]
+                        // get last month label
+                        last_month = item['date']
+                        total_monthly_data ++
+                    });
+                    // calculate average
+                    total_average_monthly_kwh = total_monthly_kwh/total_monthly_data
+                    total_average_monthly_wh = total_monthly_wh/total_monthly_data
+                    total_average_monthly_joule = total_monthly_joule/total_monthly_data
+                    // add data to html element
+                    $("#avg_monthly_kwh").html(total_average_monthly_kwh.toLocaleString())
+                    $("#last_monthly_kwh").html(last_monthly_kwh.toLocaleString())
+                    $("#last_month_label").html(last_month)
+                })
+            })
+        </script>
 </body>
 
 </html>
